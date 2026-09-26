@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package gwatchtogether.poc.v1;
+
+option java_package = "com.saytikus.gwatchtogether.protocol.wire";
+option java_multiple_files = true;
+option java_outer_classname = "PocControlSchema";
+
+// POC-0 exact-version wire contract; v1 here is a schema namespace, not a product release.
+message ClientHello {
+  optional uint32 protocol_major = 1;
+  optional uint32 protocol_minor = 2;
+  optional string app_version = 3;
+  repeated string capabilities = 4;
+}
+
+// Identity/signature fields are transport bytes only. No trust is established by decoding them.
+message ServerHello {
+  optional uint32 protocol_major = 1;
+  optional uint32 protocol_minor = 2;
+  optional string server_id = 3;
+  optional string server_instance_id = 4;
+  bytes server_identity_public_key = 5;
+  bytes client_nonce = 6;
+  bytes server_nonce = 7;
+  bytes signature = 8;
+  repeated string capabilities = 9;
+}
+
+// Identifies the tuple future application logic can validate; the schema does not enforce staleness.
+message WatchOperationRef {
+  string server_instance_id = 1;
+  string watch_session_id = 2;
+  optional uint64 source_epoch = 3;
+  optional uint64 watch_revision = 4;
+  string operation_id = 5;
+  optional uint64 expected_revision = 6;
+}
+
+message WatchReady {
+  WatchOperationRef operation = 1;
+}
+
+enum ControlErrorCode {
+  CONTROL_ERROR_UNSPECIFIED = 0;
+  INVALID_ARGUMENT = 1;
+  STALE_STATE = 2;
+  RESYNC_REQUIRED = 3;
+  CAPABILITY_UNSUPPORTED = 4;
+  INCOMPATIBLE_PROTOCOL = 5;
+  UPDATE_REQUIRED = 6;
+  TEMPORARILY_UNAVAILABLE = 7;
+  INTERNAL = 8;
+  UNAUTHENTICATED = 9;
+  PERMISSION_DENIED = 10;
+  MEDIA_PREPARE_FAILED = 11;
+  PARTICIPANT_TIMEOUT = 12;
+  RESOURCE_EXHAUSTED = 13;
+}
+
+message ControlError {
+  ControlErrorCode code = 1;
+  optional uint64 current_revision = 2;
+}
+
+// Add new payload field numbers; never reuse a removed field number.
+message ControlEnvelope {
+  optional string request_id = 1;
+  oneof payload {
+    ClientHello client_hello = 2;
+    ServerHello server_hello = 3;
+    WatchReady watch_ready = 4;
+    ControlError error = 5;
+  }
+}
