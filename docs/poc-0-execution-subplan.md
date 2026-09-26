@@ -10,6 +10,10 @@
 - Keep logs/reports and runtime evidence outside Git. Never include secrets or raw runtime logs in this plan or review.
 - Respect manual gates: local/synthetic tests cannot stand in for two physical PCs, WAN, a clean Windows package run or friend acceptance. Schedule physical two-PC LAN/WAN/soak tests after full P0 code implementation and before POC-0 acceptance; they do not replace local/unit checks or other gates. Do not start POC-1 automatically after P0-27.
 
+## P0-08 synthetic fixture-only evidence (2026-09-27)
+
+The parameterless `native/media-harness/windows/p0-08-archive-fixture-proof.ps1` (SHA-256 `41399187b16eb5fdb3f26b6d1aa79baeb0b2dc5454fd692a725ef60cfb3f3dc6`) was syntax-parsed and run with Windows PowerShell 5.1. It generated synthetic ZIP fixtures in memory and passed 22/22 assertions; independent validation and read-only reviews accepted only this narrow result. No official artifact, real ZIP, extractor, installer, native tool, network, or socket was used. It does not establish race-safe containment: path preflight and writes remain TOCTOU-vulnerable. Three earlier failed self-test runs left partial temporary scratch; failed scratch is not automatically removed, and handling those roots requires separate explicit GO and ownership verification. No raw absolute paths or hostnames are recorded. This fixture evidence does not change P0-08 UNKNOWN, P0-09 blocked on P0-07/P0-08, P0-07 trial 3/3 STOP, or P0-10 open/not accepted.
+
 ## Dependency waves and acceptance
 
 | Wave | Steps and hard dependencies | Wave exit evidence / acceptance (planned, not run, except explicitly recorded accepted evidence such as the narrow P0-06 result) |
