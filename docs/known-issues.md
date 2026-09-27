@@ -97,6 +97,17 @@ This register contains only findings supported by the accepted POC-0 record. Unk
 - **Workaround:** Use only the filtered offline parser-test command in the scratch README. Do not run the old WS08 loopback test without a separate owner-specific socket GO.
 - **Evidence:** README documents the selected parser-test SHA-256 and independently reviewed 11/11 XML result; no raw XML or sensitive runtime details are copied here.
 
+## P0-12-DESKTOP-DEMO-001 — local P01/P02 visual spike presents fabricated readiness
+
+- **Status / severity:** Open; P2, local-demo limitation, reported 2026-09-27. Static read-only local scout and independent reviewer findings; not a shipped-product defect claim.
+- **Observed behavior:** The local untracked Desktop P01/P02 visual spike displays a fabricated pairing code/readiness and has no-op actions. Normal GUI launch does not start LiveKit. These are static source-review findings; no runtime reproduction was performed.
+- **Reproduction:** None performed. Evidence is limited to a static read-only local scout and independent review of local spike source; the spike is untracked and is not linked as public evidence.
+- **Risk:** If demonstrated as real product behavior, the mock code and readiness may give a false impression of product capability/readiness. No claim is made that shipped/production or remote code is available.
+- **Workaround:** Do not use the spike for P0 acceptance or present its mock code as an actual pairing code. Target the real P0-10/P0-11 gates and accepted visual contract in P0-12; evaluate any future implementation in a separate review.
+- **Owner:** P0 Desktop proof owner; no individual assigned.
+- **Target:** P0-10/P0-11 real protocol and host/pairing gates, followed by P0-12 against its accepted visual contract; future implementation requires separate review.
+- **Evidence limits:** Static read-only local source review only. No runtime reproduction, network/socket activity, or live readiness was tested. No raw addresses, hostnames, private paths, or links to ignored/untracked files are included.
+
 ## Future finding template
 
 Copy this section per finding; keep unknown facts marked `TBD` until observed.
