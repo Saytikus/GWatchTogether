@@ -10,6 +10,39 @@
 - Keep logs/reports and runtime evidence outside Git. Never include secrets or raw runtime logs in this plan or review.
 - Respect manual gates: local/synthetic tests cannot stand in for two physical PCs, WAN, a clean Windows package run or friend acceptance. Schedule physical two-PC LAN/WAN/soak tests after full P0 code implementation and before POC-0 acceptance; they do not replace local/unit checks or other gates. Do not start POC-1 automatically after P0-27.
 
+## Offline global request-budget and STOP guard
+
+For any separately owner-approved bounded external acquisition, the parent must record an explicit approval manifest
+**before dispatch**: exact approved URLs and intended artifacts, permitted action (for example, GET only if expressly
+approved), one total attempt count across **all** children, per-attempt and total byte/time limits, expiry, and STOP
+conditions. Missing or expired approval means no request. Artifact approval does not authorize execution of a binary.
+
+Dispatch and handoff checklist:
+
+1. Reserve the entire global attempt count before launch for **one** named executor; no independent acquisition fanout,
+   second request-capable worker or child-level quota split. Pass only the manifest's bounded action to that executor.
+   No child may expand, replenish or transfer permission.
+2. Record an attempt before issuing it; count every attempt even if only headers arrive, the body is absent, or an
+   exception, timeout or error occurs. Stop on an unapproved URL/action, exceeded byte/time limit or expiry.
+3. On any partial/error result, freeze **all** remaining attempts and STOP; a spare count is not permission to retry
+   or fetch another artifact. Resume only after a new explicit owner GO stating fresh scope and budget.
+4. Give reviewers retained evidence only, without network-capable tools or requests. Before **any** follow-on worker,
+   the parent reconciles actual counts from all children against the manifest, outcomes, expiry and STOP state; if
+   uncertain, deny dispatch and escalate. Retain only non-sensitive counts/outcomes/artifact references in the handoff.
+
+The following table is an **offline decision exercise**, not permission or evidence of a new request:
+
+| Scenario | Pre-dispatch / observed ledger | Decision |
+|---|---|---|
+| Two authorized GETs, first executor receives headers only then fails | Reserve 2/2 globally to one executor; attempt 1 consumes 1/2, 1/2 unused but frozen | STOP. No retry or second GET without new owner GO. |
+| Independent second worker asks for two GETs after that failure | 1/2 consumed; remaining 1/2 frozen; no separate allocation exists | **PRE-DISPATCH DENY**; zero requests by second worker. Review retained evidence offline. |
+| Happy path within an explicit two-GET manifest | One executor uses each exact URL/action within limits and expiry; both complete, ledger 2/2 | Reconcile 2/2, then offline review only; no additional request. |
+| Executor proposes a URL absent from the manifest | Proposed URL has no approved allocation even if count remains | **PRE-DISPATCH DENY**; zero requests to the unexpected URL; seek new owner GO. |
+
+This is process policy, **not** technical or OS-enforced network isolation. The P1
+`P0-08-SIDECAR-REQUEST-001` finding remains **OPEN** until this guard is demonstrated under a separately approved
+scope; this document records no new acquisition proof and changes no real-binary authorization.
+
 ## P0-08 synthetic fixture-only evidence (2026-09-27)
 
 The parameterless `native/media-harness/windows/p0-08-archive-fixture-proof.ps1` (SHA-256 `41399187b16eb5fdb3f26b6d1aa79baeb0b2dc5454fd692a725ef60cfb3f3dc6`) was syntax-parsed and run with Windows PowerShell 5.1. It generated synthetic ZIP fixtures in memory and passed 22/22 assertions; independent validation and read-only reviews accepted only this narrow result. No official artifact, real ZIP, extractor, installer, native tool, network, or socket was used. It does not establish race-safe containment: path preflight and writes remain TOCTOU-vulnerable. Three earlier failed self-test runs left partial temporary scratch; failed scratch is not automatically removed, and handling those roots requires separate explicit GO and ownership verification. No raw absolute paths or hostnames are recorded. This fixture evidence does not change P0-08 UNKNOWN, P0-09 blocked on P0-07/P0-08, P0-07 trial 3/3 STOP, or P0-10 open/not accepted.
